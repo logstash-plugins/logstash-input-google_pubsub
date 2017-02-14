@@ -48,7 +48,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   private
 
   def request(options)
-    @logger.info('Sending an API request')
+    @logger.debug('Sending an API request')
     @client.execute(options)
   rescue ArgumentError => _e
     @logger.info('Authorizing...')
