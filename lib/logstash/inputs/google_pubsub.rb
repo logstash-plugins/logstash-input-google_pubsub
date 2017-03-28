@@ -63,7 +63,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
 
   public
   def register
-    @logger.info("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
+    @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
     @topic = "projects/#{@project_id}/topics/#{@topic}"
     @subscription = "projects/#{@project_id}/subscriptions/#{@subscription}"
     @subscription_exists = false
@@ -83,7 +83,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     #       - googleauth ~> 0.3 requires multi_json 1.11.0 that conflicts
     #         with logstash-2.3.2's multi_json 1.11.3
     if @json_key_file
-      @logger.info("Authorizing with JSON key file: #{@json_key_file}")
+      @logger.debug("Authorizing with JSON key file: #{@json_key_file}")
       file_path = File.expand_path(@json_key_file)
       key_json = File.open(file_path, "r", &:read)
       key_json = JSON.parse(key_json)
@@ -113,7 +113,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   def run(queue)
     # Attempt to create the subscription
     if !@subscription_exists
-      @logger.info("Creating subscription #{subscription}")
+      @logger.debug("Creating subscription #{subscription}")
       result = request(
         :api_method => @pubsub.projects.subscriptions.create,
         :parameters => {'name' => @subscription},
@@ -128,7 +128,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       @subscription_exists = true
     end # if !@subscription
 
-    @logger.info("Pulling messages from sub '#{subscription}'")
+    @logger.debug("Pulling messages from sub '#{subscription}'")
     while !stop?
       # Pull and queue messages
       messages = []
@@ -147,7 +147,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
           messages = messages["receivedMessages"]
         end
       else
-        @logger.info("Error pulling messages:'#{result.error_message}'")
+        @logger.error("Error pulling messages:'#{result.error_message}'")
       end
 
       if messages
@@ -174,7 +174,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
           }
         )
         if result.error?
-          @logger.info("Error #{result.status}: #{result.error_message}")
+          @logger.error("Error #{result.status}: #{result.error_message}")
         end
       end # if messages
     end # loop
