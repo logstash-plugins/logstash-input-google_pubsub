@@ -27,20 +27,20 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config_name 'google_pubsub'
 
   # Google Cloud Project ID (name, not number)
-  config :project_id, validate: :string, required: true
+  config :project_id, :validate => :string, required: true
 
   # Google Cloud Pub/Sub Topic and Subscription.
   # Note that the topic must be created manually with Cloud Logging
   # pre-configured export to PubSub configured to use the defined topic.
   # The subscription will be created automatically by the plugin.
-  config :topic, validate: :string, required: true
-  config :subscription, validate: :string, required: true
-  config :max_messages, validate: :number, required: true, default: 5
+  config :topic, :validate => :string, :required => true
+  config :subscription, :validate => :string, :required => true
+  config :max_messages, :validate => :string, :required => true, :default => 5
 
   # If logstash is running within Google Compute Engine, the plugin will use
   # GCE's Application Default Credentials. Outside of GCE, you will need to
   # specify a Service Account JSON key file.
-  config :json_key_file, validate: :path, required: false
+  config :json_key_file, :validate => :path, :required => false
 
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, 'plain'
