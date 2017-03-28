@@ -22,10 +22,7 @@ require "logstash/namespace"
 # Google deps
 require "google/api_client"
 
-# Generate a repeating message.
-#
-# This plugin is intented only as an example.
-
+# Consume events from https://cloud.google.com/pubsub/docs/overview[Google Cloud Pub/Sub] service.
 class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config_name "google_pubsub"
 
@@ -51,15 +48,15 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   private
   def request(options)
     begin
-      @logger.info("Sending an API request")
+      @logger.debug("Sending an API request")
       result = @client.execute(options)
     rescue ArgumentError => e
-      @logger.info("Authorizing...")
+      @logger.debug("Authorizing...")
       @client.authorization.fetch_access_token!
-      @logger.info("...authorized")
+      @logger.debug("...authorized")
       request(options)
     rescue Faraday::TimeoutError => e
-      @logger.info("Request timeout, re-trying request")
+      @logger.debug("Request timeout, re-trying request")
       request(options)
     end
   end # def request

@@ -21,7 +21,7 @@ describe LogStash::Inputs::GooglePubSub do
   let(:bad1) { { 'topic' => 'foo', 'subscription' => 'bar' } }
   let(:bad2) { { 'project_id' => 'foo', 'subscription' => 'bar' } }
   let(:bad3) { { 'project_id' => 'foo', 'topic' => 'bar' } }
-  let(:config) { { 'project_id' => 'myproj', 'subscription' => 'foo', 'topic' => 'bar', 'json_key_file' => '/home/erjohnso/fake.json' } }
+  let(:config) { { 'project_id' => 'myproj', 'subscription' => 'foo', 'topic' => 'bar' } }
 
   it "ensures required config options are present" do
     expect {
@@ -34,12 +34,4 @@ describe LogStash::Inputs::GooglePubSub do
       plugin = LogStash::Inputs::GooglePubSub.new(bad3)
     }.to raise_error(LogStash::ConfigurationError)
   end
-
-  it "validates register vars" do
-    plugin = LogStash::Inputs::GooglePubSub.new(config)
-    plugin.register
-    expect(plugin.topic).to eq("projects/myproj/topics/bar")
-    expect(plugin.subscription).to eq("projects/myproj/subscriptions/foo")
-  end
-
 end
