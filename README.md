@@ -152,7 +152,7 @@ bundle exec rspec
 
 - Edit Logstash `Gemfile` and add the local plugin path, for example:
 ```ruby
-gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
+gem "logstash-input-google_pubsub", :path => "/your/local/logstash-input-google_pubsub"
 ```
 - Install plugin
 ```sh
@@ -175,7 +175,7 @@ You can use the same **2.1** method to run your plugin in an installed Logstash 
 
 - Build your plugin gem
 ```sh
-gem build logstash-filter-awesome.gemspec
+gem build logstash-input-google_pubsub.gemspec
 ```
 - Install the plugin from the Logstash home
 ```sh
