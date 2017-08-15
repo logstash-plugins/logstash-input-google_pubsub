@@ -1,3 +1,6 @@
+## 1.0.3
+  - Fix some documentation issues
+
 ## 1.0.2
  - Docs: Fix list numbering
 
