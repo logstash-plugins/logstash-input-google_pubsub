@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = 'logstash-input-google_pubsub'
-  s.version         = '1.0.3'
+  s.version         = '1.0.4'
   s.licenses = ['Apache-2.0']
-  s.summary = "Logstash input plugin for Google Cloud Pub/Sub."
+  s.summary = "Consume events from a Google Cloud PubSub service"
   s.description = "This gem is a Logstash input plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program."
   s.authors = ["Eric Johnson"]
   s.email = 'erjohnso@google.com'
