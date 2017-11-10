@@ -21,9 +21,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "<= 2.99"
   s.add_runtime_dependency 'logstash-codec-plain'
   s.add_runtime_dependency 'stud', '>= 0.0.22'
-  # Google dependencies
-  # google-api-client >= 0.9 requires ruby2 which is not currently compatible
-  # with JRuby
-  s.add_runtime_dependency 'google-api-client', '~> 0.8.6', '< 0.9'
+  s.add_runtime_dependency 'google-api-client', '~> 0.17.0'
   s.add_development_dependency 'logstash-devutils'
 end

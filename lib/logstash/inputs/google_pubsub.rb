@@ -20,7 +20,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 
 # Google deps
-require "google/api_client"
+require "google/apis/pubsub_v1"
 
 # This is a https://github.com/elastic/logstash[Logstash] input plugin for 
 # https://cloud.google.com/pubsub/[Google Pub/Sub]. The plugin can subscribe 
@@ -174,7 +174,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     )
 
     # Initialize the pubsub API client
-    @pubsub = @client.discovered_api('pubsub', 'v1')
+    @pubsub = Google::Apis::PubsubV1::PubsubService.new
 
     # Handle various kinds of auth (JSON or Application Default Creds)
     # NOTE: Cannot use 'googleauth' gem since there are dependency conflicts
