@@ -24,6 +24,6 @@ Gem::Specification.new do |s|
   # Google dependencies
   # google-api-client >= 0.9 requires ruby2 which is not currently compatible
   # with JRuby
-  s.add_runtime_dependency 'google-api-client', '~> 0.8.6', '< 0.9'
+  s.add_runtime_dependency 'google-api-client', '~> 0.17.0'
   s.add_development_dependency 'logstash-devutils'
 end
