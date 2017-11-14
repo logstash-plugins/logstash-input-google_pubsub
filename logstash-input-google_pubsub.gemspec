@@ -25,5 +25,12 @@ Gem::Specification.new do |s|
   # google-api-client >= 0.9 requires ruby2 which is not currently compatible
   # with JRuby
   s.add_runtime_dependency 'google-api-client', '~> 0.8.6', '< 0.9'
+  s.requirements << "jar 'com.google.cloud:google-cloud-pubsub', '0.28.0-beta'"
+  s.requirements << "jar 'com.google.api.grpc:proto-google-cloud-pubsub-v1', '0.1.24'"
+  s.requirements << "jar 'com.google.api:gax', '1.14.0'"
+  s.requirements << "jar 'com.google.guava:guava', '20.0'"
+  s.requirements << "jar 'com.google.api:api-common', '1.2.0'"
+  s.requirements << "jar 'com.google.auth:google-auth-library-oauth2-http', '0.9.0'"
   s.add_development_dependency 'logstash-devutils'
+  s.add_development_dependency 'jar-dependencies', '~> 0.3.2'
 end
