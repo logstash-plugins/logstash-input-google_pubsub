@@ -20,7 +20,6 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 
 require 'java'
-require 'json'
 require 'logstash-input-google_pubsub_jars.rb'
 
 # This is a https://github.com/elastic/logstash[Logstash] input plugin for 
