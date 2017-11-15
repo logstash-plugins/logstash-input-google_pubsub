@@ -180,6 +180,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end
   end
 
+  include_package 'com.google.api.gax.batching'
   include_package 'com.google.api.gax.core'
   include_package 'com.google.auth.oauth2'
   include_package 'com.google.common.util.concurrent'
@@ -250,8 +251,10 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       @logger.error("#{failure}")
       exit
     end
+    flowControlSettings = FlowControlSettings.newBuilder().setMaxOutstandingElementCount(@max_messages).build()
     @subscriber = Subscriber.newBuilder(@subscription_name, handler)
       .setCredentialsProvider(@credentialsProvider)
+      .setFlowControlSettings(flowControlSettings)
       .build()
     @subscriber.addListener(listener, MoreExecutors.directExecutor())
     @subscriber.startAsync()
