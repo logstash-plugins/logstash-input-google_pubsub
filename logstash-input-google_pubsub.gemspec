@@ -22,9 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'logstash-codec-plain'
   s.add_runtime_dependency 'stud', '>= 0.0.22'
   # Google dependencies
-  # google-api-client >= 0.9 requires ruby2 which is not currently compatible
   # with JRuby
-  s.add_runtime_dependency 'google-api-client', '~> 0.8.6', '< 0.9'
   s.requirements << "jar 'com.google.cloud:google-cloud-pubsub', '0.28.0-beta'"
   s.requirements << "jar 'com.google.api.grpc:proto-google-cloud-pubsub-v1', '0.1.24'"
   s.requirements << "jar 'com.google.api:gax', '1.14.0'"

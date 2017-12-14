@@ -252,9 +252,12 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       exit
     end
     flowControlSettings = FlowControlSettings.newBuilder().setMaxOutstandingElementCount(@max_messages).build()
+    executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).build()
     @subscriber = Subscriber.newBuilder(@subscription_name, handler)
       .setCredentialsProvider(@credentialsProvider)
       .setFlowControlSettings(flowControlSettings)
+      .setExecutorProvider(executorProvider)
+      .setParallelPullCount(1)
       .build()
     @subscriber.addListener(listener, MoreExecutors.directExecutor())
     @subscriber.startAsync()
