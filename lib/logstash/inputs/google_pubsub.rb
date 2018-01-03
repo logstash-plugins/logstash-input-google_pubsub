@@ -199,7 +199,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         :signing_key => signing_key,
         :token_credential_uri => "https://accounts.google.com/o/oauth2/token"
       )
-      @logger.info("Client authorizataion with JSON key ready")
+      @logger.info("Client authorization with JSON key ready")
     else
       # Assume we're running in GCE and can use metadata tokens, if the host
       # GCE instance was not created with the PubSub scope, then the plugin
