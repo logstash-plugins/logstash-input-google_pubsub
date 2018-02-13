@@ -175,7 +175,8 @@ specify a Service Account JSON key file.
   * Value type is <<number,number>>
   * Default value is `5`
 
-
+The maximum number of messages returned for this request.
+The Pub/Sub system may return fewer than the number specified. 
 
 [id="plugins-{type}s-{plugin}-project_id"]
 ===== `project_id` 
