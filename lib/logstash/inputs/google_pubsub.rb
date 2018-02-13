@@ -265,16 +265,18 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         end
 
         ack_ids = messages.map{ |msg| msg["ackId"] }
-        result = request(
-          :api_method => @pubsub.projects.subscriptions.acknowledge,
-          :parameters => {'subscription' => @subscription},
-          :body_object => {
-            :ackIds => ack_ids
-          }
-        )
-        if result.error?
-          @logger.error("Error #{result.status}: #{result.error_message}")
-        end
+        if ack_ids.any?
+          result = request(
+            :api_method => @pubsub.projects.subscriptions.acknowledge,
+            :parameters => {'subscription' => @subscription},
+            :body_object => {
+              :ackIds => ack_ids
+            }
+          )
+          if result.error?
+            @logger.error("Error #{result.status}: #{result.error_message}")
+          end
+        end # if ack_ids.any?
       end # if messages
     end # loop
   end # def run
