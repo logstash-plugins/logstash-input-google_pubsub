@@ -249,7 +249,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         @logger.error("Error pulling messages:'#{result.error_message}'")
       end
 
-      if messages
+      if messages.any?
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
@@ -265,18 +265,16 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         end
 
         ack_ids = messages.map{ |msg| msg["ackId"] }
-        if ack_ids.any?
-          result = request(
-            :api_method => @pubsub.projects.subscriptions.acknowledge,
-            :parameters => {'subscription' => @subscription},
-            :body_object => {
-              :ackIds => ack_ids
-            }
-          )
-          if result.error?
-            @logger.error("Error #{result.status}: #{result.error_message}")
-          end
-        end # if ack_ids.any?
+        result = request(
+          :api_method => @pubsub.projects.subscriptions.acknowledge,
+          :parameters => {'subscription' => @subscription},
+          :body_object => {
+            :ackIds => ack_ids
+          }
+        )
+        if result.error?
+          @logger.error("Error #{result.status}: #{result.error_message}")
+        end
       end # if messages
     end # loop
   end # def run
