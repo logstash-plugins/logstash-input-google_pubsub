@@ -228,6 +228,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end # if !@subscription
 
     @logger.debug("Pulling messages from sub '#{subscription}'")
+    codec_instance = @codec.clone
     while !stop?
       # Pull and queue messages
       messages = []
@@ -253,14 +254,10 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
-            begin
-              parsed_msg = JSON.parse(decoded_msg)
-            rescue
-              parsed_msg = { :raw_message => decoded_msg }
+              codec_instance.decode(decoded_msg) do |event|
+              decorate(event)
+              queue << event
             end
-            event = LogStash::Event.new(parsed_msg)
-            decorate(event)
-            queue << event
           end
         end
 
