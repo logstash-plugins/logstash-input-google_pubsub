@@ -228,7 +228,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end # if !@subscription
 
     @logger.debug("Pulling messages from sub '#{subscription}'")
-    codec_instance = @codec.clone
     while !stop?
       # Pull and queue messages
       messages = []
@@ -254,7 +253,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
-              codec_instance.decode(decoded_msg) do |event|
+            @codec.decode(decoded_msg) do |event|
               decorate(event)
               queue << event
             end
