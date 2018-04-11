@@ -21,6 +21,7 @@ describe LogStash::Inputs::GooglePubSub do
   let(:bad1) { { 'topic' => 'foo', 'subscription' => 'bar' } }
   let(:bad2) { { 'project_id' => 'foo', 'subscription' => 'bar' } }
   let(:bad3) { { 'project_id' => 'foo', 'topic' => 'bar' } }
+  let(:bad4) { { 'project_id' => 'foo', 'subscription' => 'bar', 'topic' => 'bazz', 'ack_deadline_seconds' => 'foo' } }
   let(:config) { { 'project_id' => 'myproj', 'subscription' => 'foo', 'topic' => 'bar' } }
 
   it "ensures required config options are present" do
@@ -33,5 +34,11 @@ describe LogStash::Inputs::GooglePubSub do
     expect {
       plugin = LogStash::Inputs::GooglePubSub.new(bad3)
     }.to raise_error(LogStash::ConfigurationError)
+    expect {
+      plugin = LogStash::Inputs::GooglePubSub.new(bad4)
+    }.to raise_error(LogStash::ConfigurationError)
+    expect {
+      plugin = LogStash::Inputs::GooglePubSub.new(config)
+    }.to_not raise_error
   end
 end

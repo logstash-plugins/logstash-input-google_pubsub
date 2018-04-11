@@ -141,6 +141,11 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # specify a Service Account JSON key file.
   config :json_key_file, :validate => :path, :required => false
 
+  # Google Cloud Pub/Sub Acknowledgement Deadline in seconds.
+  # The message is sent again if your code doesn't acknowledge the message
+  # before the deadline to ensure at least once delivery.
+  config :ack_deadline_seconds, :validate => :number, :required => true, :default => 15
+
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
 
@@ -170,7 +175,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     # TODO(erjohnso): read UA data from the gemspec
     @client = Google::APIClient.new(
       :application_name => 'logstash-input-google_pubsub',
-      :application_version => '0.9.0'
+      :application_version => '1.1.0'
     )
 
     # Initialize the pubsub API client
@@ -218,7 +223,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         :parameters => {'name' => @subscription},
         :body_object => {
           :topic => @topic,
-          :ackDeadlineSeconds => 15
+          :ackDeadlineSeconds => @ack_deadline_seconds
         }
       )
       if result.error? and result.status != 409
