@@ -261,6 +261,8 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         end
 
         ack_ids = messages.map{ |msg| msg["ackId"] }
+        next if ack_ids.empty?
+
         result = request(
           :api_method => @pubsub.projects.subscriptions.acknowledge,
           :parameters => {'subscription' => @subscription},
