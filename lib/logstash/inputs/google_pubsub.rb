@@ -249,7 +249,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         @logger.error("Error pulling messages:'#{result.error_message}'")
       end
 
-      if messages
+      if messages.any?
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
