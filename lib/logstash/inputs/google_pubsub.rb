@@ -228,9 +228,10 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end # if !@subscription
 
     @logger.debug("Pulling messages from sub '#{subscription}'")
+
     while !stop?
       # Pull and queue messages
-      messages = []
+
       result = request(
         :api_method => @pubsub.projects.subscriptions.pull,
         :parameters => {'subscription' => @subscription},
@@ -240,16 +241,20 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         }
       )
 
-      if !result.error?
-        messages = JSON.parse(result.body)
-        if messages.key?("receivedMessages")
-          messages = messages["receivedMessages"]
-        end
-      else
+      // Check for an error in the response from google or end loop
+      if result.error?
         @logger.error("Error pulling messages:'#{result.error_message}'")
+        next
       end
 
-      if messages
+      jsonBody = JSON.parse(result.body)
+
+      // Check for receivedMessages in the reponse for google or end loop
+      next unless jsonBody.has_key?("receivedMessages")
+
+      messages = jsonBody["receivedMessages"]
+
+      if messages.any?
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
