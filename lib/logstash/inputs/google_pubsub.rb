@@ -141,6 +141,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # specify a Service Account JSON key file.
   config :json_key_file, :validate => :path, :required => false
 
+  # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
+  config :include_metadata, :validate => :boolean, :required => false, :default => false
+
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
 
@@ -254,6 +257,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
             @codec.decode(decoded_msg) do |event|
+              event.set("[@metadata][pubsub_message]", msg["message"]) if @include_metadata
               decorate(event)
               queue << event
             end
