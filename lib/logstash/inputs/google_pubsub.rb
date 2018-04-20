@@ -122,6 +122,38 @@ require "google/api_client"
 # output { stdout { codec => rubydebug } }
 # ----------------------------------
 #
+# ==== Metadata and Attributes
+# 
+# The original Pub/Sub message is preserved in the special Logstash 
+# `[@metadata][pubsub_message]` field so you can fetch:
+# 
+# * Message attributes
+# * The origiginal base64 data
+# * Pub/Sub message ID for de-duplication
+# * Publish time
+# 
+# You MUST extract any fields you want in a filter prior to the data being sent
+# to an output because Logstash deletes `@metadata` fields otherwise.
+# 
+# See the PubsubMessage
+# https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage[documentation]
+# for a full description of the fields.
+# 
+# Example to get the message ID:
+# 
+# [source,ruby]
+# ----------------------------------	
+# input {google_pubsub {...}}
+# 
+# filter {
+#   mutate {
+#     add_field => { "messageId" => "%{[@metadata][pubsub_message][messageId]}" }
+#   }
+# }
+# 
+# output {...}
+# ----------------------------------
+#
 class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config_name "google_pubsub"
 
