@@ -218,9 +218,11 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
     @subscription_id = "projects/#{@project_id}/subscriptions/#{@subscription}"
 
-    @credentialsProvider = FixedCredentialsProvider.create(
-      ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
-    )
+    if @json_key_file
+      @credentialsProvider = FixedCredentialsProvider.create(
+        ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
+      )
+    end
     @topic_name = TopicName.create(@project_id, @topic)
     @subscription_name = SubscriptionName.create(@project_id, @subscription)
   end
@@ -258,12 +260,15 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end
     flowControlSettings = FlowControlSettings.newBuilder().setMaxOutstandingElementCount(@max_messages).build()
     executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).build()
-    @subscriber = Subscriber.newBuilder(@subscription_name, handler)
-      .setCredentialsProvider(@credentialsProvider)
+    subscriberBuilder = Subscriber.newBuilder(@subscription_name, handler)
       .setFlowControlSettings(flowControlSettings)
       .setExecutorProvider(executorProvider)
       .setParallelPullCount(1)
-      .build()
+
+    if @credentialsProvider
+      subscriberBuilder.setCredentialsProvider(@credentialsProvider)
+    end
+    @subscriber = subscriberBuilder.build()
     @subscriber.addListener(listener, MoreExecutors.directExecutor())
     @subscriber.startAsync()
     @subscriber.awaitTerminated()
