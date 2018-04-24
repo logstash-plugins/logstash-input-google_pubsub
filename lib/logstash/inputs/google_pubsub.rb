@@ -223,6 +223,10 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     @subscription_name = SubscriptionName.create(@project_id, @subscription)
   end
 
+  def stop
+    @subscriber.stopAsync().awaitTerminated() if @subscriber != nil
+  end
+
   def run(queue)
     # Attempt to create the subscription
     if !@subscription_exists
@@ -261,10 +265,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       .build()
     @subscriber.addListener(listener, MoreExecutors.directExecutor())
     @subscriber.startAsync()
-    while !stop?
-    end
-    if @subscriber != nil
-      @subscriber.stopAsync().awaitTerminated()
-    end
+    @subscriber.awaitTerminated()
   end
 end
