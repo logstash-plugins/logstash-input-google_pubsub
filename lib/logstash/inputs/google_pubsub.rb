@@ -256,7 +256,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     end
     listener = SubscriberListener.new do |from, failure|
       @logger.error("#{failure}")
-      exit
+      raise failure
     end
     flowControlSettings = FlowControlSettings.newBuilder().setMaxOutstandingElementCount(@max_messages).build()
     executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).build()
