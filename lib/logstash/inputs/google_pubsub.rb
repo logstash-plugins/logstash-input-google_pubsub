@@ -207,6 +207,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
   config :include_metadata, :validate => :boolean, :required => false, :default => false
 
+  # Do not try to create subscription by default
+  config :create_subscription, :validate => :boolean, :required => false, :default => false
+
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "json"
 
@@ -214,7 +217,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   def register
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
     @subscription_id = "projects/#{@project_id}/subscriptions/#{@subscription}"
-    @subscription_exists = false
 
     @credentialsProvider = FixedCredentialsProvider.create(
       ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
@@ -229,7 +231,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
 
   def run(queue)
     # Attempt to create the subscription
-    if !@subscription_exists
+    if @create_subscription
       @logger.debug("Creating subscription #{@subscription_id}")
       subscriptionAdminClient = SubscriptionAdminClient.create
       begin
@@ -237,7 +239,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       rescue
         @logger.info("Subscription already exists")
       end
-      @subscription_exists = true
     end
 
     @logger.debug("Pulling messages from sub '#{@subscription_id}'")
