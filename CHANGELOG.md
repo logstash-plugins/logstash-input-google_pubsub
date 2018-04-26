@@ -1,3 +1,9 @@
+## 1.0.6
+  - Ignore acknowledge requests with an empty array of IDs. Fixes [#14](https://github.com/logstash-plugins/logstash-input-google_pubsub/issues/14)
+
+## 1.0.5
+  - Docs: Set the default_codec doc attribute.
+
 ## 1.0.4
   - Update gemspec summary
 

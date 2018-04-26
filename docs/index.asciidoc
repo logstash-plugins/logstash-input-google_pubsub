@@ -1,5 +1,6 @@
 :plugin: google_pubsub
 :type: input
+:default_codec: plain
 
 ///////////////////////////////////////////
 START - GENERATED VARIABLES, DO NOT EDIT!
@@ -212,3 +213,5 @@ The subscription will be created automatically by the plugin.
 
 [id="plugins-{type}s-{plugin}-common-options"]
 include::{include_path}/{type}.asciidoc[]
+
+:default_codec!:

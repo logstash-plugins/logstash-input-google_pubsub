@@ -122,6 +122,38 @@ require "google/api_client"
 # output { stdout { codec => rubydebug } }
 # ----------------------------------
 #
+# ==== Metadata and Attributes
+# 
+# The original Pub/Sub message is preserved in the special Logstash 
+# `[@metadata][pubsub_message]` field so you can fetch:
+# 
+# * Message attributes
+# * The origiginal base64 data
+# * Pub/Sub message ID for de-duplication
+# * Publish time
+# 
+# You MUST extract any fields you want in a filter prior to the data being sent
+# to an output because Logstash deletes `@metadata` fields otherwise.
+# 
+# See the PubsubMessage
+# https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage[documentation]
+# for a full description of the fields.
+# 
+# Example to get the message ID:
+# 
+# [source,ruby]
+# ----------------------------------	
+# input {google_pubsub {...}}
+# 
+# filter {
+#   mutate {
+#     add_field => { "messageId" => "%{[@metadata][pubsub_message][messageId]}" }
+#   }
+# }
+# 
+# output {...}
+# ----------------------------------
+#
 class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config_name "google_pubsub"
 
@@ -140,6 +172,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # GCE's Application Default Credentials. Outside of GCE, you will need to
   # specify a Service Account JSON key file.
   config :json_key_file, :validate => :path, :required => false
+
+  # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
+  config :include_metadata, :validate => :boolean, :required => false, :default => false
 
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
@@ -253,18 +288,17 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         messages.each do |msg|
           if msg.key?("message") and msg["message"].key?("data")
             decoded_msg = Base64.decode64(msg["message"]["data"])
-            begin
-              parsed_msg = JSON.parse(decoded_msg)
-            rescue
-              parsed_msg = { :raw_message => decoded_msg }
+            @codec.decode(decoded_msg) do |event|
+              event.set("[@metadata][pubsub_message]", msg["message"]) if @include_metadata
+              decorate(event)
+              queue << event
             end
-            event = LogStash::Event.new(parsed_msg)
-            decorate(event)
-            queue << event
           end
         end
 
         ack_ids = messages.map{ |msg| msg["ackId"] }
+        next if ack_ids.empty?
+
         result = request(
           :api_method => @pubsub.projects.subscriptions.acknowledge,
           :parameters => {'subscription' => @subscription},
