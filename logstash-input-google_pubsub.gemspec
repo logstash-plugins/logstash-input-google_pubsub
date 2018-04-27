@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Eric Johnson"]
   s.email = 'erjohnso@google.com'
   s.homepage = "https://cloud.google.com/pubsub/overview"
-  s.require_paths = ["lib"]
+  s.require_paths = ["lib", "vendor/jar-dependencies"]
 
   # Files
   s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION", "docs/**/*"]
