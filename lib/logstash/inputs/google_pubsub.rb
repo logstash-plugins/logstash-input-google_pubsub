@@ -186,6 +186,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   include_package 'com.google.common.util.concurrent'
   include_package 'com.google.cloud.pubsub.v1'
   include_package 'com.google.pubsub.v1'
+  include_package 'com.google.protobuf.util'
   config_name "google_pubsub"
 
   # Google Cloud Project ID (name, not number)
@@ -207,11 +208,13 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
   config :include_metadata, :validate => :boolean, :required => false, :default => false
 
-  # Do not try to create subscription by default
+  # If true, the plugin will try to create the subscription before publishing.
+  # Note: this requires additional permissions to be granted to the client and is _not_
+  # recommended for most use-cases.
   config :create_subscription, :validate => :boolean, :required => false, :default => false
 
   # If undefined, Logstash will complain, even if codec is unused.
-  default :codec, "json"
+  default :codec, "plain"
 
   public
   def register
@@ -249,7 +252,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       data = message.getData().toStringUtf8()
       @codec.decode(data) do |event|
         event.set("host", event.get("host") || @host)
-        event.set("[@metadata][pubsub_message]", msg["message"]) if @include_metadata
+        event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
         decorate(event)
         queue << event
       end
@@ -272,5 +275,14 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     @subscriber.addListener(listener, MoreExecutors.directExecutor())
     @subscriber.startAsync()
     @subscriber.awaitTerminated()
+  end
+
+  def extract_metadata(java_message)
+    {
+      data: java_message.getData().toStringUtf8(),
+      attributes: java_message.getAttributesMap(),
+      messageId: java_message.getMessageId(),
+      publishTime: Timestamps.toString(java_message.getPublishTime())
+    }
   end
 end
