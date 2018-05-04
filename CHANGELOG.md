@@ -1,3 +1,7 @@
+## 1.2.0
+ - Change to Java client
+ - Add `create_subscription` setting. Fixes [#9](https://github.com/logstash-plugins/logstash-input-google_pubsub/issues/9)
+
 ## 1.1.0
   - Add additional attributes in the `[@metadata][pubsub_message]` field. Fixes [#7](https://github.com/logstash-plugins/logstash-input-google_pubsub/issues/7)
 
