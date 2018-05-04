@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Eric Johnson"]
   s.email = 'erjohnso@google.com'
   s.homepage = "https://cloud.google.com/pubsub/overview"
-  s.require_paths = ["lib"]
+  s.require_paths = ["lib", "vendor/jar-dependencies"]
 
   # Files
   s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION", "docs/**/*"]
@@ -22,8 +22,13 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'logstash-codec-plain'
   s.add_runtime_dependency 'stud', '>= 0.0.22'
   # Google dependencies
-  # google-api-client >= 0.9 requires ruby2 which is not currently compatible
   # with JRuby
-  s.add_runtime_dependency 'google-api-client', '~> 0.8.6', '< 0.9'
+  s.requirements << "jar 'com.google.cloud:google-cloud-pubsub', '0.28.0-beta'"
+  s.requirements << "jar 'com.google.api.grpc:proto-google-cloud-pubsub-v1', '0.1.24'"
+  s.requirements << "jar 'com.google.api:gax', '1.14.0'"
+  s.requirements << "jar 'com.google.guava:guava', '20.0'"
+  s.requirements << "jar 'com.google.api:api-common', '1.2.0'"
+  s.requirements << "jar 'com.google.auth:google-auth-library-oauth2-http', '0.9.0'"
   s.add_development_dependency 'logstash-devutils'
+  s.add_development_dependency 'jar-dependencies', '~> 0.3.2'
 end

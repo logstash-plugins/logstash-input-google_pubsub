@@ -19,8 +19,8 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-# Google deps
-require "google/api_client"
+require 'java'
+require 'logstash-input-google_pubsub_jars.rb'
 
 # This is a https://github.com/elastic/logstash[Logstash] input plugin for 
 # https://cloud.google.com/pubsub/[Google Pub/Sub]. The plugin can subscribe 
@@ -123,38 +123,70 @@ require "google/api_client"
 # ----------------------------------
 #
 # ==== Metadata and Attributes
-# 
-# The original Pub/Sub message is preserved in the special Logstash 
+#
+# The original Pub/Sub message is preserved in the special Logstash
 # `[@metadata][pubsub_message]` field so you can fetch:
-# 
+#
 # * Message attributes
 # * The origiginal base64 data
 # * Pub/Sub message ID for de-duplication
 # * Publish time
-# 
+#
 # You MUST extract any fields you want in a filter prior to the data being sent
 # to an output because Logstash deletes `@metadata` fields otherwise.
-# 
+#
 # See the PubsubMessage
 # https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage[documentation]
 # for a full description of the fields.
-# 
+#
 # Example to get the message ID:
-# 
+#
 # [source,ruby]
-# ----------------------------------	
+# ----------------------------------
 # input {google_pubsub {...}}
-# 
+#
 # filter {
 #   mutate {
 #     add_field => { "messageId" => "%{[@metadata][pubsub_message][messageId]}" }
 #   }
 # }
-# 
+#
 # output {...}
 # ----------------------------------
 #
+
 class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
+  class MessageReceiver
+    include com.google.cloud.pubsub.v1.MessageReceiver
+
+    def initialize(&blk)
+      @block = blk
+    end
+
+    def receiveMessage(message, consumer)
+      @block.call(message)
+      consumer.ack()
+    end
+  end
+
+  java_import 'com.google.api.core.ApiService$Listener'
+  class SubscriberListener < Listener
+    def initialize(&blk)
+      @block = blk
+    end
+
+    def failed(from, failure)
+      @block.call(from, failure)
+    end
+  end
+
+  include_package 'com.google.api.gax.batching'
+  include_package 'com.google.api.gax.core'
+  include_package 'com.google.auth.oauth2'
+  include_package 'com.google.common.util.concurrent'
+  include_package 'com.google.cloud.pubsub.v1'
+  include_package 'com.google.pubsub.v1'
+  include_package 'com.google.protobuf.util'
   config_name "google_pubsub"
 
   # Google Cloud Project ID (name, not number)
@@ -176,140 +208,81 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
   config :include_metadata, :validate => :boolean, :required => false, :default => false
 
+  # If true, the plugin will try to create the subscription before publishing.
+  # Note: this requires additional permissions to be granted to the client and is _not_
+  # recommended for most use-cases.
+  config :create_subscription, :validate => :boolean, :required => false, :default => false
+
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
-
-  private
-  def request(options)
-    begin
-      @logger.debug("Sending an API request")
-      result = @client.execute(options)
-    rescue ArgumentError => e
-      @logger.debug("Authorizing...")
-      @client.authorization.fetch_access_token!
-      @logger.debug("...authorized")
-      request(options)
-    rescue Faraday::TimeoutError => e
-      @logger.debug("Request timeout, re-trying request")
-      request(options)
-    end
-  end # def request
 
   public
   def register
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
-    @topic = "projects/#{@project_id}/topics/#{@topic}"
-    @subscription = "projects/#{@project_id}/subscriptions/#{@subscription}"
-    @subscription_exists = false
+    @subscription_id = "projects/#{@project_id}/subscriptions/#{@subscription}"
 
-    # TODO(erjohnso): read UA data from the gemspec
-    @client = Google::APIClient.new(
-      :application_name => 'logstash-input-google_pubsub',
-      :application_version => '0.9.0'
-    )
-
-    # Initialize the pubsub API client
-    @pubsub = @client.discovered_api('pubsub', 'v1')
-
-    # Handle various kinds of auth (JSON or Application Default Creds)
-    # NOTE: Cannot use 'googleauth' gem since there are dependency conflicts
-    #       - googleauth ~> 0.5 requires mime-data-types that requires ruby2
-    #       - googleauth ~> 0.3 requires multi_json 1.11.0 that conflicts
-    #         with logstash-2.3.2's multi_json 1.11.3
     if @json_key_file
-      @logger.debug("Authorizing with JSON key file: #{@json_key_file}")
-      file_path = File.expand_path(@json_key_file)
-      key_json = File.open(file_path, "r", &:read)
-      key_json = JSON.parse(key_json)
-      unless key_json.key?("client_email") || key_json.key?("private_key")
-        raise Google::APIClient::ClientError, "Invalid JSON credentials data."
-      end
-      signing_key = ::Google::APIClient::KeyUtils.load_from_pem(key_json["private_key"], "notasecret")
-      @client.authorization = Signet::OAuth2::Client.new(
-        :audience => "https://accounts.google.com/o/oauth2/token",
-        :auth_provider_x509_cert_url => "https://www.googleapis.com/oauth2/v1/certs",
-        :client_x509_cert_url => "https://www.googleapis.com/robot/v1/metadata/x509/#{key_json['client_email']}",
-        :issuer => "#{key_json['client_email']}",
-        :scope => %w(https://www.googleapis.com/auth/cloud-platform),
-        :signing_key => signing_key,
-        :token_credential_uri => "https://accounts.google.com/o/oauth2/token"
+      @credentialsProvider = FixedCredentialsProvider.create(
+        ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
       )
-      @logger.info("Client authorization with JSON key ready")
-    else
-      # Assume we're running in GCE and can use metadata tokens, if the host
-      # GCE instance was not created with the PubSub scope, then the plugin
-      # will not be authorized to read from pubsub.
-      @logger.info("Authorizing with application default credentials")
-      @client.authorization = :google_app_default
-    end # if @json_key_file...
-  end # def register
+    end
+    @topic_name = TopicName.create(@project_id, @topic)
+    @subscription_name = SubscriptionName.create(@project_id, @subscription)
+  end
+
+  def stop
+    @subscriber.stopAsync().awaitTerminated() if @subscriber != nil
+  end
 
   def run(queue)
     # Attempt to create the subscription
-    if !@subscription_exists
-      @logger.debug("Creating subscription #{subscription}")
-      result = request(
-        :api_method => @pubsub.projects.subscriptions.create,
-        :parameters => {'name' => @subscription},
-        :body_object => {
-          :topic => @topic,
-          :ackDeadlineSeconds => 15
-        }
-      )
-      if result.error? and result.status != 409
-        raise Google::APIClient::ClientError, "Error #{result.status}: #{result.error_message}"
+    if @create_subscription
+      @logger.debug("Creating subscription #{@subscription_id}")
+      subscriptionAdminClient = SubscriptionAdminClient.create
+      begin
+        subscriptionAdminClient.createSubscription(@subscription_name, @topic_name, PushConfig.getDefaultInstance(), 0)
+      rescue
+        @logger.info("Subscription already exists")
       end
-      @subscription_exists = true
-    end # if !@subscription
+    end
 
-    @logger.debug("Pulling messages from sub '#{subscription}'")
-    while !stop?
-      # Pull and queue messages
-      messages = []
-      result = request(
-        :api_method => @pubsub.projects.subscriptions.pull,
-        :parameters => {'subscription' => @subscription},
-        :body_object => {
-          :returnImmediately => false,
-          :maxMessages => @max_messages
-        }
-      )
-
-      if !result.error?
-        messages = JSON.parse(result.body)
-        if messages.key?("receivedMessages")
-          messages = messages["receivedMessages"]
-        end
-      else
-        @logger.error("Error pulling messages:'#{result.error_message}'")
+    @logger.debug("Pulling messages from sub '#{@subscription_id}'")
+    handler = MessageReceiver.new do |message|
+      # handle incoming message, then ack/nack the received message
+      data = message.getData().toStringUtf8()
+      @codec.decode(data) do |event|
+        event.set("host", event.get("host") || @host)
+        event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
+        decorate(event)
+        queue << event
       end
+    end
+    listener = SubscriberListener.new do |from, failure|
+      @logger.error("#{failure}")
+      raise failure
+    end
+    flowControlSettings = FlowControlSettings.newBuilder().setMaxOutstandingElementCount(@max_messages).build()
+    executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).build()
+    subscriberBuilder = Subscriber.newBuilder(@subscription_name, handler)
+      .setFlowControlSettings(flowControlSettings)
+      .setExecutorProvider(executorProvider)
+      .setParallelPullCount(1)
 
-      if messages
-        messages.each do |msg|
-          if msg.key?("message") and msg["message"].key?("data")
-            decoded_msg = Base64.decode64(msg["message"]["data"])
-            @codec.decode(decoded_msg) do |event|
-              event.set("[@metadata][pubsub_message]", msg["message"]) if @include_metadata
-              decorate(event)
-              queue << event
-            end
-          end
-        end
+    if @credentialsProvider
+      subscriberBuilder.setCredentialsProvider(@credentialsProvider)
+    end
+    @subscriber = subscriberBuilder.build()
+    @subscriber.addListener(listener, MoreExecutors.directExecutor())
+    @subscriber.startAsync()
+    @subscriber.awaitTerminated()
+  end
 
-        ack_ids = messages.map{ |msg| msg["ackId"] }
-        next if ack_ids.empty?
-
-        result = request(
-          :api_method => @pubsub.projects.subscriptions.acknowledge,
-          :parameters => {'subscription' => @subscription},
-          :body_object => {
-            :ackIds => ack_ids
-          }
-        )
-        if result.error?
-          @logger.error("Error #{result.status}: #{result.error_message}")
-        end
-      end # if messages
-    end # loop
-  end # def run
-end # class LogStash::Inputs::GooglePubSub
+  def extract_metadata(java_message)
+    {
+      data: java_message.getData().toStringUtf8(),
+      attributes: java_message.getAttributesMap(),
+      messageId: java_message.getMessageId(),
+      publishTime: Timestamps.toString(java_message.getPublishTime())
+    }
+  end
+end
