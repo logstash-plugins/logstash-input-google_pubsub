@@ -259,6 +259,8 @@ If set true, will include the full message data in the `[@metadata][pubsub_messa
 [id="plugins-{type}s-{plugin}-create_subscription"]
 ===== `create_subscription`
 
+added[1.2.0]
+
   * Value type is <<boolean,boolean>>
   * Default value is `false`.
 
