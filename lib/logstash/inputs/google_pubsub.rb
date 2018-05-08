@@ -205,6 +205,11 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # specify a Service Account JSON key file.
   config :json_key_file, :validate => :path, :required => false
 
+  # Google Cloud Pub/Sub Acknowledgement Deadline in seconds.
+  # The message is sent again if your code doesn't acknowledge the message
+  # before the deadline to ensure at least once delivery.
+  config :ack_deadline_seconds, :validate => :number, :required => true, :default => 15
+
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
   config :include_metadata, :validate => :boolean, :required => false, :default => false
 
@@ -240,7 +245,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       @logger.debug("Creating subscription #{@subscription_id}")
       subscriptionAdminClient = SubscriptionAdminClient.create
       begin
-        subscriptionAdminClient.createSubscription(@subscription_name, @topic_name, PushConfig.getDefaultInstance(), 0)
+        subscriptionAdminClient.createSubscription(@subscription_name, @topic_name, PushConfig.getDefaultInstance(), @ack_deadline_seconds)
       rescue
         @logger.info("Subscription already exists")
       end
