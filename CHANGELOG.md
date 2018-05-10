@@ -1,3 +1,7 @@
+## 1.2.1
+ - Rollback Google Guava version to 19 to align with LogStash 6.2.4 Guava version. Fixes [#34](https://github.com/logstash-
+ plugins/logstash-input-google_pubsub/issues/34)
+ 
 ## 1.2.0
  - Change to Java client
  - Add `create_subscription` setting. Fixes [#9](https://github.com/logstash-plugins/logstash-input-google_pubsub/issues/9)
