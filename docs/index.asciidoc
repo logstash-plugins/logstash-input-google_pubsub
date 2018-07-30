@@ -133,6 +133,11 @@ input {
         # outside of GCE, you will need to specify the service account's
         # JSON key file below.
         #json_key_file => "/home/erjohnso/pkey.json"
+
+        # Should the plugin attempt to create the subscription on startup?
+        # This is not recommended for security reasons but may be useful in
+        # some cases.
+        #create_subscription => false
     }
 }
 output { stdout { codec => rubydebug } }
@@ -253,6 +258,8 @@ If set true, will include the full message data in the `[@metadata][pubsub_messa
 
 [id="plugins-{type}s-{plugin}-create_subscription"]
 ===== `create_subscription`
+
+added[1.2.0]
 
   * Value type is <<boolean,boolean>>
   * Default value is `false`.
