@@ -226,8 +226,8 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
       )
     end
-    @topic_name = TopicName.create(@project_id, @topic)
-    @subscription_name = SubscriptionName.create(@project_id, @subscription)
+    @topic_name = ProjectTopicName.of(@project_id, @topic)
+    @subscription_name = ProjectSubscriptionName.of(@project_id, @subscription)
   end
 
   def stop

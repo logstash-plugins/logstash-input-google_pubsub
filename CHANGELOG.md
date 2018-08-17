@@ -1,3 +1,7 @@
+## 1.2.1
+ - Fixed dependency conflicts with logstash-output-google_pubsub by using the same client library [logstash-output-google_pubsub#7](https://github.com/logstash-plugins/logstash-output-google_pubsub/issues/7)
+
+
 ## 1.2.0
  - Change to Java client
  - Add `create_subscription` setting. Fixes [#9](https://github.com/logstash-plugins/logstash-input-google_pubsub/issues/9)
