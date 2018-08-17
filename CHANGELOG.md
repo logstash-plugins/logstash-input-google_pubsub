@@ -1,5 +1,6 @@
 ## 1.2.1
- - Use the 1.37.1 Java client to match with logstash-output-google_pubsub so the dependencies won't collide.
+ - Fixed dependency conflicts with logstash-output-google_pubsub by using the same client library [logstash-output-google_pubsub#7](https://github.com/logstash-plugins/logstash-output-google_pubsub/issues/7)
+
 
 ## 1.2.0
  - Change to Java client
