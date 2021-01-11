@@ -216,6 +216,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
 
+  COMPRESSION_ALGORITHM_ZLIB = "zlib"
+  BATCHED_RECORD_SEPARATOR = 30.chr
+
   public
   def register
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
@@ -250,11 +253,26 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     handler = MessageReceiver.new do |message|
       # handle incoming message, then ack/nack the received message
       data = message.getData().toStringUtf8()
-      @codec.decode(data) do |event|
-        event.set("host", event.get("host") || @host)
-        event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
-        decorate(event)
-        queue << event
+      metadata = extract_metadata(message)
+      algorithm = metadata["compression_algorithm"]
+
+      case algorithm
+      when nil
+        @codec.decode(data) do |event|
+          event.set("host", event.get("host") || @host)
+          event.set("[@metadata][pubsub_message]", metadata) if @include_metadata
+          decorate(event)
+          queue << event
+        end
+      when COMPRESSION_ALGORITHM_ZLIB
+        lines = Zlib::Inflate.inflate(data).split(BATCHED_RECORD_SEPARATOR)
+        lines.each do |line|
+          event = LogStash::Event.new(line)
+          event.set("host", event.get("host") || @host)
+          event.set("[@metadata][pubsub_message]", metadata) if @include_metadata
+          decorate(event)
+          queue << event
+        end
       end
     end
     listener = SubscriberListener.new do |from, failure|

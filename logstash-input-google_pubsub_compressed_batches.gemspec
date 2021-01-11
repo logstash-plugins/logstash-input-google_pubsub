@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
-  s.name = 'logstash-input-google_pubsub'
-  s.version         = '1.2.1'
+  s.name = 'logstash-input-google_pubsub_compressed_batches'
+  s.version         = '1.2.2'
   s.licenses = ['Apache-2.0']
-  s.summary = "Consume events from a Google Cloud PubSub service"
+  s.summary = "Consume events from a Google Cloud PubSub service. Supports zlib compressed batches"
   s.description = "This gem is a Logstash input plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program."
-  s.authors = ["Eric Johnson"]
-  s.email = 'erjohnso@google.com'
+  s.authors = ["Eric Johnson", "Calvin Aditya"]
+  s.email = ['erjohnso@google.com', 'calvin.aditya95@gmail.com']
   s.homepage = "https://cloud.google.com/pubsub/overview"
   s.require_paths = ["lib", "vendor/jar-dependencies"]
 

@@ -1,3 +1,6 @@
+## 1.2.2
+ - Added support for reading zlib compressed batch
+
 ## 1.2.1
  - Fixed dependency conflicts with logstash-output-google_pubsub by using the same client library [logstash-output-google_pubsub#7](https://github.com/logstash-plugins/logstash-output-google_pubsub/issues/7)
 
