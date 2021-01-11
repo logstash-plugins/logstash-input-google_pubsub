@@ -254,7 +254,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       # handle incoming message, then ack/nack the received message
       data = message.getData().toStringUtf8()
       metadata = extract_metadata(message)
-      algorithm = metadata["compression_algorithm"]
+      algorithm = metadata["attributes"]["compression_algorithm"]
 
       case algorithm
       when nil
