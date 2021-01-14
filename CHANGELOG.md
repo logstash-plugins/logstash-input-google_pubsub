@@ -1,4 +1,4 @@
-## 1.2.3
+## 1.2.6
  - Added support for reading zlib compressed batch
 
 ## 1.2.1

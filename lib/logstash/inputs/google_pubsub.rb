@@ -252,24 +252,38 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     @logger.debug("Pulling messages from sub '#{@subscription_id}'")
     handler = MessageReceiver.new do |message|
       # handle incoming message, then ack/nack the received message
-      data = message.getData().toStringUtf8()
-      metadata = extract_metadata(message)
-      algorithm = metadata["attributes"]["compression_algorithm"]
+      algorithm = message.getAttributesMap()["compression_algorithm"]
 
       case algorithm
       when nil
+        data = message.getData().toStringUtf8()
         @codec.decode(data) do |event|
           event.set("host", event.get("host") || @host)
-          event.set("[@metadata][pubsub_message]", metadata) if @include_metadata
+          event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
           decorate(event)
           queue << event
         end
       when COMPRESSION_ALGORITHM_ZLIB
-        lines = Zlib::Inflate.inflate(data).split(BATCHED_RECORD_SEPARATOR)
+        data = message.getData().toByteArray()
+
+        # decompress batch
+        bais = java.io.ByteArrayInputStream.new(data)
+        iis = java.util.zip.InflaterInputStream.new(bais)
+
+        result = ""
+        buf = Java::byte[5].new
+        rlen = -1
+
+        while (rlen = iis.read(buf)) != -1 do
+          result += java.lang.String.new(java.util.Arrays.copyOf(buf, rlen), "UTF-8")
+        end
+
+        # split into multiple events
+        lines = result.split(BATCHED_RECORD_SEPARATOR)
         lines.each do |line|
-          event = LogStash::Event.new(line)
+          event = LogStash::Event.new("message" => line)
           event.set("host", event.get("host") || @host)
-          event.set("[@metadata][pubsub_message]", metadata) if @include_metadata
+          event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
           decorate(event)
           queue << event
         end
