@@ -41,7 +41,9 @@ and added to the processing pipeline queue. All Pub/Sub messages will be
 
 It is generally assumed that incoming messages will be in JSON and added to
 the logstash `event` as-is. However, if a plain text message is received, the
-plugin will return the raw text in as `raw_message` in the logstash `event`.
+plugin will return the raw text in as `raw_message` in the logstash `event`. If
+your default message type is other than JSON, you may specify it in the plugin
+configuration using the `codec` attribute.
 
 #### Authentication
 
@@ -101,6 +103,10 @@ input {
         # outside of GCE, you will need to specify the service account's
         # JSON key file below.
         #json_key_file => "/home/erjohnso/pkey.json"
+
+        # The default codec is json, specify an alternate if your events are
+        # formatted differently. See [here](https://www.elastic.co/guide/en/logstash/current/codec-plugins.html) for codec options.
+        # codec => json
     }
 }
 
