@@ -166,6 +166,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     def receiveMessage(message, consumer)
       @block.call(message)
       consumer.ack()
+    rescue java.util.zip.DataFormatException, java.util.zip.ZipException => e
+      consumer.ack()
+    ensure
     end
   end
 
@@ -264,28 +267,33 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
           queue << event
         end
       when COMPRESSION_ALGORITHM_ZLIB
-        data = message.getData().toByteArray()
+        begin
+          data = message.getData().toByteArray()
 
-        # decompress batch
-        bais = java.io.ByteArrayInputStream.new(data)
-        iis = java.util.zip.InflaterInputStream.new(bais)
+          # decompress batch
+          bais = java.io.ByteArrayInputStream.new(data)
+          iis = java.util.zip.InflaterInputStream.new(bais)
 
-        result = ""
-        buf = Java::byte[5].new
-        rlen = -1
+          result = ""
+          buf = Java::byte[5].new
+          rlen = -1
 
-        while (rlen = iis.read(buf)) != -1 do
-          result += java.lang.String.new(java.util.Arrays.copyOf(buf, rlen), "UTF-8")
-        end
+          while (rlen = iis.read(buf)) != -1 do
+            result += java.lang.String.new(java.util.Arrays.copyOf(buf, rlen), "UTF-8")
+          end
 
-        # split into multiple events
-        lines = result.split(BATCHED_RECORD_SEPARATOR)
-        lines.each do |line|
-          event = LogStash::Event.new("message" => line)
-          event.set("host", event.get("host") || @host)
-          event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
-          decorate(event)
-          queue << event
+          # split into multiple events
+          lines = result.split(BATCHED_RECORD_SEPARATOR)
+          lines.each do |line|
+            event = LogStash::Event.new("message" => line)
+            event.set("host", event.get("host") || @host)
+            event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
+            decorate(event)
+            queue << event
+          end
+        rescue java.util.zip.DataFormatException, java.util.zip.ZipException => e
+          @logger.error(e.backtrace.join("\n"))
+          raise
         end
       end
     end
