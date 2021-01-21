@@ -168,7 +168,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       consumer.ack()
     rescue java.util.zip.DataFormatException, java.util.zip.ZipException => e
       consumer.ack()
-    ensure
     end
   end
 
