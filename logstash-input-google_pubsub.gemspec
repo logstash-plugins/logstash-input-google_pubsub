@@ -33,5 +33,5 @@ Gem::Specification.new do |s|
   s.requirements << "jar 'com.google.protobuf:protobuf-java-util', '3.6.0'"
   s.requirements << "jar 'com.google.protobuf:protobuf-lite', '3.0.1'"
   s.add_development_dependency 'logstash-devutils'
-  s.add_development_dependency 'jar-dependencies', '~> 0.3.2'
+  s.add_development_dependency 'jar-dependencies', '~> 0.4.0'
 end
