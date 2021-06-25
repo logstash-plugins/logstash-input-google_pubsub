@@ -216,6 +216,9 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"
 
+  # ByteArray Deserializer for binary codecs
+  config :bytearray_deserializer, :validate => :boolean, :required => false, :default => false
+
   public
   def register
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
@@ -249,9 +252,12 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
     @logger.debug("Pulling messages from sub '#{@subscription_id}'")
     handler = MessageReceiver.new do |message|
       # handle incoming message, then ack/nack the received message
-      data = message.getData().toStringUtf8()
+      if @bytearray_deserializer
+        data = message.getData().toByteArray()
+      else
+        data = message.getData().toStringUtf8()
+      end
       @codec.decode(data) do |event|
-        event.set("host", event.get("host") || @host)
         event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
         decorate(event)
         queue << event
@@ -279,7 +285,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
 
   def extract_metadata(java_message)
     {
-      data: java_message.getData().toStringUtf8(),
       attributes: java_message.getAttributesMap(),
       messageId: java_message.getMessageId(),
       publishTime: Timestamps.toString(java_message.getPublishTime())
