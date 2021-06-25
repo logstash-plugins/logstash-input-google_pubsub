@@ -258,7 +258,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
         data = message.getData().toStringUtf8()
       end
       @codec.decode(data) do |event|
-        event.set("host", event.get("host") || @host)
         event.set("[@metadata][pubsub_message]", extract_metadata(message)) if @include_metadata
         decorate(event)
         queue << event
