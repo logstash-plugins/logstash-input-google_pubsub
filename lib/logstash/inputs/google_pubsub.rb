@@ -285,7 +285,6 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
 
   def extract_metadata(java_message)
     {
-      data: java_message.getData().toStringUtf8(),
       attributes: java_message.getAttributesMap(),
       messageId: java_message.getMessageId(),
       publishTime: Timestamps.toString(java_message.getPublishTime())
