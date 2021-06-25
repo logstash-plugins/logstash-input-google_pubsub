@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'logstash-input-google_pubsub'
-  s.version         = '1.2.1'
+  s.version         = '1.2.1.1'
   s.licenses = ['Apache-2.0']
   s.summary = "Consume events from a Google Cloud PubSub service"
   s.description = "This gem is a Logstash input plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program."
@@ -29,6 +29,9 @@ Gem::Specification.new do |s|
   s.requirements << "jar 'com.google.guava:guava', '20.0'"
   s.requirements << "jar 'com.google.api:api-common', '1.2.0'"
   s.requirements << "jar 'com.google.auth:google-auth-library-oauth2-http', '0.9.0'"
+  s.requirements << "jar 'com.google.protobuf:protobuf-java', '3.6.0'"
+  s.requirements << "jar 'com.google.protobuf:protobuf-java-util', '3.6.0'"
+  s.requirements << "jar 'com.google.protobuf:protobuf-lite', '3.0.1'"
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'jar-dependencies', '~> 0.3.2'
 end
