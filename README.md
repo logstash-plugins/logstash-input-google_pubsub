@@ -120,18 +120,29 @@ Need help? Try #logstash on freenode IRC or the https://discuss.elastic.co/c/log
 
 ## Developing
 
-### 1. Plugin Developement and Testing
+### 1. Plugin Development and Testing
 
 #### Code
+
 - To get started, you'll need JRuby with the Bundler gem installed.
+- You'll also need a Logstash installation to build the plugin against.
 
 - Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
 
-- Install dependencies
+- `export LOGSTASH_SOURCE=1` and point `LOGSTASH_PATH` to a local Logstash
+  e.g. `export LOGSTASH_PATH=/opt/local/logstash-7.15.0`
+
+- Install Ruby dependencies
 ```sh
 bundle install
-rake install_jars
 ```
+
+- Install Java dependencies - regenerates the *lib/logstash-input-google_pubsub_jars.rb*
+  script used to load the .jar dependencies when the plugin starts.
+```sh
+./gradlew vendor
+```
+  NOTE: This step is necessary whenever **build.gradle** is updated.
 
 #### Test
 
@@ -141,7 +152,7 @@ rake install_jars
 bundle install
 ```
 
-- Run tests
+- Run Ruby tests
 
 ```sh
 bundle exec rspec
@@ -157,12 +168,7 @@ gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
 ```
 - Install plugin
 ```sh
-# Logstash 2.3 and higher
 bin/logstash-plugin install --no-verify
-
-# Prior to Logstash 2.3
-bin/plugin install --no-verify
-
 ```
 - Run Logstash with your plugin
 ```sh
@@ -180,12 +186,7 @@ gem build logstash-filter-awesome.gemspec
 ```
 - Install the plugin from the Logstash home
 ```sh
-# Logstash 2.3 and higher
 bin/logstash-plugin install --no-verify
-
-# Prior to Logstash 2.3
-bin/plugin install --no-verify
-
 ```
 - Start Logstash and proceed to test the plugin
 
