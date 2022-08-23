@@ -34,7 +34,7 @@ dependencies {
     implementation "com.google.code.findbugs:jsr305:3.0.2"
     implementation "com.google.code.gson:gson:2.7"
     implementation "com.google.errorprone:error_prone_annotations:2.2.0"
-    implementation "com.google.guava:guava:20.0"
+    implementation "com.google.guava:guava:31.0.1"
     implementation "com.google.http-client:google-http-client:1.23.0"
     implementation "com.google.http-client:google-http-client-jackson2:1.19.0"
     implementation "com.google.protobuf:protobuf-java:3.6.0"
