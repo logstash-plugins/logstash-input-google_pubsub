@@ -1,5 +1,5 @@
 ## 1.2.2
- - Updated dependencies [#58](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/58)
+ - Updated dependencies forcing this plugin to be compatible only with Logstash >= 8.2.0 [#58](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/58)
 
 ## 1.2.1
  - Fixed dependency conflicts with logstash-output-google_pubsub by using the same client library [logstash-output-google_pubsub#7](https://github.com/logstash-plugins/logstash-output-google_pubsub/issues/7)
