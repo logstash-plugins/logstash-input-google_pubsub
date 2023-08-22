@@ -1,3 +1,6 @@
+## 1.3.0
+ - Updated plugins dependencies [#62](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/62)
+
 ## 1.2.2
  - Updated dependencies forcing this plugin to be compatible only with Logstash >= 8.2.0 [#58](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/58)
 
