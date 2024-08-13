@@ -205,6 +205,11 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   # specify a Service Account JSON key file.
   config :json_key_file, :validate => :path, :required => false
 
+    # If logstash is running within Google Compute Engine, the plugin will use
+  # GCE's Application Default Credentials. Outside of GCE, you will need to
+  # specify a Service Account JSON key file.
+  config :json_key_file_content, :validate => :string, :required => false
+
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
   config :include_metadata, :validate => :boolean, :required => false, :default => false
 
@@ -225,7 +230,12 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
       @credentialsProvider = FixedCredentialsProvider.create(
         ServiceAccountCredentials.fromStream(java.io.FileInputStream.new(@json_key_file))
       )
+    elsif @json_key_file_content
+      @credentialsProvider = FixedCredentialsProvider.create(
+        ServiceAccountCredentials.fromStream(java.io.ByteArrayInputStream.new((@json_key_file_content).to_java_bytes))
+      )
     end
+
     @topic_name = ProjectTopicName.of(@project_id, @topic)
     @subscription_name = ProjectSubscriptionName.of(@project_id, @subscription)
   end

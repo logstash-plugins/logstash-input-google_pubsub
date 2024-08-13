@@ -32,6 +32,8 @@ input {
         # outside of GCE, you will need to specify the service account's
         # JSON key file below.
         #json_key_file => "/home/erjohnso/pkey.json"
+        # or
+        #json_key_file_content => "{****}"
     }
 }
 

@@ -49,7 +49,9 @@ You have two options for authentication depending on where you run Logstash.
 
 1. If you are running Logstash outside of Google Cloud Platform, then you will
 need to create a Google Cloud Platform Service Account and specify the full
-path to the JSON private key file in your config. You must assign sufficient
+path to the JSON private key file in your config in `json_key_file` attribute.
+If you do not want to upload file and want to accept it as a string, then add the content 
+of JSON private key in `json_key_file_content` attribute. You must assign sufficient
 roles to the Service Account to create a subscription and to pull messages
 from the subscription. Learn more about GCP Service Accounts and IAM roles
 here:
@@ -58,7 +60,7 @@ here:
   - Creating Service Accounts [overview](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
   - Granting Roles [overview](https://cloud.google.com/iam/docs/granting-roles-to-service-accounts)
 
-1. If you are running Logstash on a Google Compute Engine instance, you may opt
+2. If you are running Logstash on a Google Compute Engine instance, you may opt
 to use Application Default Credentials. In this case, you will not need to
 specify a JSON private key file in your config.
 
