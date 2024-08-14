@@ -1,5 +1,8 @@
 ## Prevent someone from accidentally including a GCP JSON key file
 *.json
+##Exception for the test file
+!test.json 
+
 ## Ignore active vim swap files
 *.swp
 
