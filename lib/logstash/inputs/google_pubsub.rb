@@ -200,14 +200,17 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config :subscription, :validate => :string, :required => true
   config :max_messages, :validate => :number, :required => true, :default => 5
 
-  # If logstash is running within Google Compute Engine, the plugin will use
-  # GCE's Application Default Credentials. Outside of GCE, you will need to
-  # specify a Service Account JSON key file.
+  # If Logstash is running within Google Compute Engine (GCE), the plugin will use
+  # GCE's Application Default Credentials. When running outside of GCE, you must 
+  # provide a Service Account JSON key. This can be done in one of two ways:
+  #
+  # 1. Specify the file path to the JSON key file using the `json_key_file` option.
+  # 2. Provide the JSON key as a base64-encoded string using the `json_key_file_content` option.
+  #
+  # Both `json_key_file` and `json_key_file_content` are optional, but you must 
+  # specify one of them if Logstash is running outside of GCE. It is invalid to 
+  # provide both options simultaneously. 
   config :json_key_file, :validate => :path, :required => false
-
-    # If logstash is running within Google Compute Engine, the plugin will use
-  # GCE's Application Default Credentials. Outside of GCE, you will need to
-  # specify a Service Account JSON key file.
   config :json_key_file_content, :validate => :string, :required => false
 
   # If set true, will include the full message data in the `[@metadata][pubsub_message]` field.
@@ -225,6 +228,10 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   def register
     @logger.debug("Registering Google PubSub Input: project_id=#{@project_id}, topic=#{@topic}, subscription=#{@subscription}")
     @subscription_id = "projects/#{@project_id}/subscriptions/#{@subscription}"
+
+    if json_key_file && json_key_file_content
+      raise LogStash::ConfigurationError, "Specify either 'json_key_file' or 'json_key_file_content', defining both simultanously is not permitted."
+    end
 
     if @json_key_file
       @credentialsProvider = FixedCredentialsProvider.create(
