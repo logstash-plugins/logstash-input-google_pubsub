@@ -1,3 +1,6 @@
+## 1.4.0
+ - Added optional field json_key_file_content to get Service Account JSON key as an String input. [#68](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/68)
+
 ## 1.3.0
  - Updated plugins dependencies [#62](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/62)
 
