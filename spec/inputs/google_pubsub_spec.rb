@@ -34,4 +34,12 @@ describe LogStash::Inputs::GooglePubSub do
       plugin = LogStash::Inputs::GooglePubSub.new(bad3)
     }.to raise_error(LogStash::ConfigurationError)
   end
+
+  let(:file_and_content_config_settings) { { 'project_id' => 'myproj', 'subscription' => 'foo', 'topic' => 'bar', 'json_key_file' => 'spec/inputs/test.json', 'json_key_file_content' => '{}' } }
+  it "raise a configuration error if both 'json_key_file' and 'json_key_file_content' are present" do
+    expect { 
+      plugin = LogStash::Inputs::GooglePubSub.new(file_and_content_config_settings)
+      plugin.register()
+    }.to raise_error(LogStash::ConfigurationError)
+  end
 end
