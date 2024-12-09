@@ -1,3 +1,6 @@
+## Unreleased
+ - Removed `jar-dependencies` dependency. [#70](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/70)
+
 ## 1.4.0
  - Added optional field json_key_file_content to get Service Account JSON key as an String input. [#68](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/68)
 
