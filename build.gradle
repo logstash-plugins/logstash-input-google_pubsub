@@ -38,6 +38,8 @@ task generateGemJarRequiresFile {
                     w << "require_jar(\'${id.group}\', \'${id.module}\', \'${id.version}\')\n"
                 }
             }
+
+            w << "require_jar(\'${project.group}\', \'${project.name}\', \'${project.version}\')\n"
         }
     }
 }
@@ -59,6 +61,12 @@ task vendor {
                 Files.copy(artifact.file.toPath(), newJarFile.toPath(), REPLACE_EXISTING)
             }
         }
+
+        // Copy the project jar into vendor/jar-dependencies
+        String projectGroupPath = project.group.replaceAll('\\.', '/')
+        File projectJarFile = file("${vendorPathPrefix}/${projectGroupPath}/${project.name}/${project.version}/${project.name}-${project.version}.jar")
+        projectJarFile.mkdirs()
+        Files.copy(file("$buildDir/libs/${project.name}-${project.version}.jar").toPath(), projectJarFile.toPath(), REPLACE_EXISTING)
     }
 }
 
