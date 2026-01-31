@@ -1,4 +1,5 @@
-## Unreleased
+## 1.4.1
+ - Re-packaging the plugin [#72](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/72)
  - Removed `jar-dependencies` dependency. [#70](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/70)
 
 ## 1.4.0
