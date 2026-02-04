@@ -20,7 +20,22 @@ dependencies {
         implementation('com.google.protobuf:protobuf-java:3.25.5')
         implementation('com.google.protobuf:protobuf-java-util:3.25.5')
         implementation('com.google.protobuf:protobuf-javalite:4.29.3')
+
+        // All gRPC components must be at the same version to align on the same API interfaces
         implementation('io.grpc:grpc-netty-shaded:1.75.0')
+        implementation('io.grpc:grpc-api:1.75.0')
+        implementation('io.grpc:grpc-core:1.75.0')
+        implementation('io.grpc:grpc-context:1.75.0')
+        implementation('io.grpc:grpc-stub:1.75.0')
+        implementation('io.grpc:grpc-protobuf:1.75.0')
+        implementation('io.grpc:grpc-protobuf-lite:1.75.0')
+        implementation('io.grpc:grpc-alts:1.75.0')
+        implementation('io.grpc:grpc-auth:1.75.0')
+        implementation('io.grpc:grpc-grpclb:1.75.0')
+        implementation('io.grpc:grpc-googleapis:1.75.0')
+        implementation('io.grpc:grpc-services:1.75.0')
+        implementation('io.grpc:grpc-xds:1.75.0')
+        implementation('io.grpc:grpc-util:1.75.0')
     }
     // Core dependency - transitive dependencies are automatically resolved
     implementation "com.google.cloud:google-cloud-pubsub:1.124.1"
