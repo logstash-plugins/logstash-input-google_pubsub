@@ -11,6 +11,8 @@ plugins {
 group "org.logstash.inputs"
 version Files.readAllLines(Paths.get("version")).first()
 
+def grpcVersion = '1.75.0'
+
 repositories {
     mavenCentral()
 }
@@ -20,7 +22,22 @@ dependencies {
         implementation('com.google.protobuf:protobuf-java:3.25.5')
         implementation('com.google.protobuf:protobuf-java-util:3.25.5')
         implementation('com.google.protobuf:protobuf-javalite:4.29.3')
-        implementation('io.grpc:grpc-netty-shaded:1.75.0')
+
+        // All gRPC components must be at the same version to align on the same API interfaces
+        implementation("io.grpc:grpc-netty-shaded:${grpcVersion}")
+        implementation("io.grpc:grpc-api:${grpcVersion}")
+        implementation("io.grpc:grpc-core:${grpcVersion}")
+        implementation("io.grpc:grpc-context:${grpcVersion}")
+        implementation("io.grpc:grpc-stub:${grpcVersion}")
+        implementation("io.grpc:grpc-protobuf:${grpcVersion}")
+        implementation("io.grpc:grpc-protobuf-lite:${grpcVersion}")
+        implementation("io.grpc:grpc-alts:${grpcVersion}")
+        implementation("io.grpc:grpc-auth:${grpcVersion}")
+        implementation("io.grpc:grpc-grpclb:${grpcVersion}")
+        implementation("io.grpc:grpc-googleapis:${grpcVersion}")
+        implementation("io.grpc:grpc-services:${grpcVersion}")
+        implementation("io.grpc:grpc-xds:${grpcVersion}")
+        implementation("io.grpc:grpc-util:${grpcVersion}")
     }
     // Core dependency - transitive dependencies are automatically resolved
     implementation "com.google.cloud:google-cloud-pubsub:1.124.1"

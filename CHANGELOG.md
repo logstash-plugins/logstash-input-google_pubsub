@@ -1,3 +1,6 @@
+## 1.4.2
+ - Fixed the no class found issues due to gRPC dependency mismatch caused by re-packaging [#75](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/75)
+
 ## 1.4.1
  - Re-packaging the plugin [#72](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/72)
  - Removed `jar-dependencies` dependency. [#70](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/70)
