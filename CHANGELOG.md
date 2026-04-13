@@ -1,6 +1,6 @@
 ## 1.4.3
- - Upgrade `google-cloud-pubsub`, gRPC and `protobuf-java` dependencies [#77](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/77)
- - Add Gradle task to validate gRPC and Protobuf version consistency
+ - Upgrade `google-cloud-pubsub`, gRPC and `protobuf-java` dependencies [#78](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/78)
+ - Add Gradle task to validate google-pubsub, gRPC and protobuf version consistency
 
 ## 1.4.2
  - Fixed the no class found issues due to gRPC dependency mismatch caused by re-packaging [#75](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/75)
