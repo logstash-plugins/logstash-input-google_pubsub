@@ -1,3 +1,7 @@
+## 1.4.3
+ - Adopted Google Cloud BOM (`libraries-bom:26.79.0`) for dependency management, replacing manual version constraints so upgrades `google-cloud-pubsub`, gRPC and `protobuf-java` dependencies [#78](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/78)
+ - Added `checkDependencyAlignment` Gradle task to validate gRPC version consistency
+
 ## 1.4.2
  - Fixed the no class found issues due to gRPC dependency mismatch caused by re-packaging [#75](https://github.com/logstash-plugins/logstash-input-google_pubsub/pull/75)
 

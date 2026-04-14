@@ -11,36 +11,15 @@ plugins {
 group "org.logstash.inputs"
 version Files.readAllLines(Paths.get("version")).first()
 
-def grpcVersion = '1.75.0'
+def googleCloudBomVersion = '26.79.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    constraints {
-        implementation('com.google.protobuf:protobuf-java:3.25.5')
-        implementation('com.google.protobuf:protobuf-java-util:3.25.5')
-        implementation('com.google.protobuf:protobuf-javalite:4.29.3')
-
-        // All gRPC components must be at the same version to align on the same API interfaces
-        implementation("io.grpc:grpc-netty-shaded:${grpcVersion}")
-        implementation("io.grpc:grpc-api:${grpcVersion}")
-        implementation("io.grpc:grpc-core:${grpcVersion}")
-        implementation("io.grpc:grpc-context:${grpcVersion}")
-        implementation("io.grpc:grpc-stub:${grpcVersion}")
-        implementation("io.grpc:grpc-protobuf:${grpcVersion}")
-        implementation("io.grpc:grpc-protobuf-lite:${grpcVersion}")
-        implementation("io.grpc:grpc-alts:${grpcVersion}")
-        implementation("io.grpc:grpc-auth:${grpcVersion}")
-        implementation("io.grpc:grpc-grpclb:${grpcVersion}")
-        implementation("io.grpc:grpc-googleapis:${grpcVersion}")
-        implementation("io.grpc:grpc-services:${grpcVersion}")
-        implementation("io.grpc:grpc-xds:${grpcVersion}")
-        implementation("io.grpc:grpc-util:${grpcVersion}")
-    }
-    // Core dependency - transitive dependencies are automatically resolved
-    implementation "com.google.cloud:google-cloud-pubsub:1.124.1"
+    implementation platform("com.google.cloud:libraries-bom:${googleCloudBomVersion}")
+    implementation 'com.google.cloud:google-cloud-pubsub'
 }
 
 task generateGemJarRequiresFile {
@@ -87,4 +66,60 @@ task vendor {
     }
 }
 
-vendor.dependsOn(jar, generateGemJarRequiresFile)
+clean {
+    delete 'vendor/jar-dependencies'
+}
+
+task checkDependencyAlignment {
+    description = 'Verifies gRPC and Protobuf dependency versions are consistently resolved'
+    doLast {
+        def resolved = [:]
+        def declaredByPubsub = [:]
+
+        configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+            if (dep.moduleGroup == 'com.google.cloud' && dep.moduleName == 'google-cloud-pubsub') {
+                dep.children.each { child ->
+                    declaredByPubsub["${child.moduleGroup}:${child.moduleName}"] = child.moduleVersion
+                }
+            }
+        }
+
+        configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def id = artifact.moduleVersion.id
+            resolved["${id.group}:${id.name}"] = id.version
+        }
+
+        def grpcVersions = resolved.findAll { it.key.startsWith('io.grpc:grpc-') }
+        def uniqueGrpcVersions = grpcVersions.collect { it.value }.toSet()
+
+        if (grpcVersions.isEmpty()) {
+            throw new GradleException("No io.grpc modules found on runtimeClasspath")
+        }
+        if (uniqueGrpcVersions.size() > 1) {
+            def report = grpcVersions.sort().collect { k, v -> "  ${k}: ${v}" }.join('\n')
+            throw new GradleException("gRPC version mismatch detected!\n${report}")
+        }
+
+        def pubsubGrpc = declaredByPubsub.find { it.key == 'io.grpc:grpc-api' }?.value
+        def resolvedGrpc = resolved['io.grpc:grpc-api']
+        if (pubsubGrpc && resolvedGrpc && pubsubGrpc != resolvedGrpc) {
+            throw new GradleException(
+                "google-cloud-pubsub expects gRPC ${pubsubGrpc}, but resolved to ${resolvedGrpc}. " +
+                "Ensure constraints align with the BOM-managed versions.")
+        }
+
+        def protobufJava = resolved['com.google.protobuf:protobuf-java']
+        def protobufUtil = resolved['com.google.protobuf:protobuf-java-util']
+        if (protobufJava && protobufUtil && protobufJava != protobufUtil) {
+            throw new GradleException(
+                "protobuf-java (${protobufJava}) and protobuf-java-util (${protobufUtil}) versions must match.")
+        }
+
+        def pubsubVersion = resolved['com.google.cloud:google-cloud-pubsub'] ?: 'N/A'
+        logger.lifecycle("google-cloud-pubsub: ${pubsubVersion}")
+        logger.lifecycle("gRPC: ${uniqueGrpcVersions.first()} (${grpcVersions.size()} modules)")
+        logger.lifecycle("Protobuf: protobuf-java=${protobufJava ?: 'N/A'}, protobuf-java-util=${protobufUtil ?: 'N/A'}")
+    }
+}
+
+vendor.dependsOn(jar, generateGemJarRequiresFile, checkDependencyAlignment)
