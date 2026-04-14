@@ -66,6 +66,10 @@ task vendor {
     }
 }
 
+clean {
+    delete 'vendor/jar-dependencies'
+}
+
 task checkDependencyAlignment {
     description = 'Verifies gRPC and Protobuf dependency versions are consistently resolved'
     doLast {
