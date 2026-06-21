@@ -222,7 +222,7 @@ class LogStash::Inputs::GooglePubSub < LogStash::Inputs::Base
   config :create_subscription, :validate => :boolean, :required => false, :default => false
 
   # If undefined, Logstash will complain, even if codec is unused.
-  default :codec, "plain"
+  default :codec, "json"
 
   public
   def register
