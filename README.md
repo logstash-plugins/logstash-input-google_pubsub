@@ -1,6 +1,6 @@
 # Logstash Plugin
 
-[![Travis Build Status](https://travis-ci.com/logstash-plugins/logstash-input-google_pubsub.svg)](https://travis-ci.com/logstash-plugins/logstash-input-google_pubsub)
+[![Unit Tests](https://github.com/logstash-plugins/logstash-input-google_pubsub/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/logstash-plugins/logstash-input-google_pubsub/actions/workflows/unit-tests.yml)
 
 This is a [Logstash](https://github.com/elastic/logstash) input plugin for
 [Google Pub/Sub](https://cloud.google.com/pubsub/). The plugin can subscribe
